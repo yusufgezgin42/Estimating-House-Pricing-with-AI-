@@ -1,0 +1,272 @@
+{
+  "article_info": {
+    "title": "Konut fiyatı Eylül'de reel değer kaybını sürdürdü",
+    "url": "https://www.bloomberght.com/konut-fiyati-eylul-de-3759357",
+    "publish_date": "16 Ekim 2025, Perşembe 10:04",
+    "features": {
+      "tr_yoy_change": 32.2,
+      "tr_mom_change": 1.7,
+      "tr_index_level": 195.7,
+      "ist_yoy_change": null,
+      "ist_mom_change": null
+    }
+  },
+  "nlp_analysis": {
+    "keywords": {
+      "top_keywords": {
+        "önceki": 6,
+        "yüzde": 6,
+        "oranında": 5,
+        "aya": 4,
+        "yılın": 3,
+        "reel": 3,
+        "eylül": 3,
+        "artış": 3,
+        "aynı": 2,
+        "ayna": 2,
+        "nominal": 2,
+        "32,2": 2,
+        "arttı": 2,
+        "fiyat": 2,
+        "yükseldi": 2,
+        "yılı": 2,
+        "ayında": 2,
+        "stanbul": 2,
+        "ankara": 2,
+        "zmir": 2
+      },
+      "category_keywords": {
+        "faiz": [
+          "tcmb"
+        ],
+        "fiyat": [
+          "fiyat",
+          "fiyatı",
+          "konut fiyatı",
+          "kfe"
+        ],
+        "enflasyon": [
+          "reel",
+          "nominal",
+          "reel değer"
+        ],
+        "talep": [
+          "arttı",
+          "artış"
+        ],
+        "semt_bölge": [
+          "ankara"
+        ],
+        "ekonomi": [
+          "merkez bankası"
+        ],
+        "değer": [
+          "değer",
+          "değer kaybı",
+          "reel değer"
+        ],
+        "risk": [
+          "kaybı"
+        ]
+      },
+      "total_tokens": 94,
+      "unique_tokens": 55
+    },
+    "sentiment": {
+      "sentiment_scores": {
+        "pozitif": 17,
+        "negatif": 4,
+        "nötr": 18
+      },
+      "sentiment_ratio": {
+        "pozitif": 0.4358974358974359,
+        "negatif": 0.10256410256410256,
+        "nötr": 0.46153846153846156
+      },
+      "dominant_sentiment": "pozitif",
+      "sentence_sentiments": [
+        "pozitif",
+        "negatif",
+        "pozitif",
+        "pozitif",
+        "pozitif",
+        "pozitif",
+        "pozitif",
+        "pozitif"
+      ],
+      "positive_sentences": 7,
+      "negative_sentences": 1,
+      "neutral_sentences": 0
+    },
+    "financial_entities": {
+      "percentages": [
+        32.2,
+        1.7,
+        32.2,
+        0.8,
+        1.5,
+        30.7
+      ],
+      "significant_numbers": [
+        32.2,
+        20.0,
+        2025.0,
+        1.7,
+        195.7,
+        32.2,
+        2025.0,
+        1.5,
+        2.3,
+        2.9,
+        30.7,
+        41.1,
+        34.4
+      ],
+      "currency_values": {},
+      "time_expressions": [
+        [
+          "20 ay",
+          "ay",
+          ""
+        ],
+        [
+          "2025 yıl",
+          "yıl",
+          ""
+        ],
+        [
+          "2025 yıl",
+          "yıl",
+          ""
+        ]
+      ],
+      "kfe_values": [
+        195.7
+      ],
+      "max_percentage": 32.2,
+      "min_percentage": 0.8,
+      "avg_percentage": 16.51666666666667,
+      "total_percentages": 6
+    },
+    "temporal_context": {
+      "time_context": {
+        "kısa_vade": 0,
+        "orta_vade": 0,
+        "uzun_vade": 1
+      },
+      "dominant_timeframe": "uzun_vade",
+      "date_analysis": {}
+    },
+    "numerical_analysis": {
+      "total_percentages": 6,
+      "max_percentage": 32.2,
+      "min_percentage": 0.8,
+      "avg_percentage": 16.51666666666667,
+      "median_percentage": 16.2,
+      "growth_trend": "yüksek",
+      "growth_message": "Yüksek büyüme oranları"
+    }
+  },
+  "decision_analysis": {
+    "rule_scores": {
+      "K1": 3,
+      "K2": 2,
+      "K3": 1,
+      "K4": -2,
+      "K5": 0,
+      "K6": 1
+    },
+    "rule_details": {
+      "K1": {
+        "name": "Düşük Kredi Faizi ve Talep Artışı",
+        "score": 3,
+        "triggered_keywords": [
+          "tcmb",
+          "tcmb"
+        ],
+        "description": "Düşük faiz ortamı ve artan talep"
+      },
+      "K2": {
+        "name": "Arz Azlığı ve Fiyat Artışı",
+        "score": 2,
+        "triggered_keywords": [
+          "kfe",
+          "arttı",
+          "yükseldi",
+          "konut fiyatı",
+          "kfe",
+          "arttı"
+        ],
+        "description": "Arz kısıtlılığı fiyatları yukarı çekiyor"
+      },
+      "K3": {
+        "name": "Enflasyona Karşı Koruma",
+        "score": 1,
+        "triggered_keywords": [
+          "reel değer",
+          "reel değer"
+        ],
+        "description": "Gayrimenkul enflasyona karşı koruma sağlıyor"
+      },
+      "K4": {
+        "name": "Aşırı Değerlenme Riski",
+        "score": -2,
+        "triggered_keywords": [
+          "düşüş",
+          "değer kaybı",
+          "kaybı"
+        ],
+        "description": "Aşırı değerlenme riski mevcut"
+      },
+      "K5": {
+        "name": "İstanbul Özelinde Güçlü Performans",
+        "score": 0,
+        "triggered_keywords": [],
+        "description": "İstanbul özelinde güçlü performans"
+      },
+      "K6": {
+        "name": "Yüksek Artış Oranları",
+        "score": 1,
+        "triggered_keywords": [
+          "yüzde",
+          "oranında",
+          "artış",
+          "artış",
+          "Yüksek oranlar: [32.2, 32.2, 30.7]"
+        ],
+        "description": "Yüksek yüzdelik artış oranları"
+      }
+    },
+    "total_score": 5,
+    "recommendation": {
+      "action": "AL",
+      "confidence": "çok yüksek",
+      "total_score": 5,
+      "details": [
+        "Düşük kredi faizleri alım için uygun ortam",
+        "Arz azlığı fiyatları destekliyor",
+        "Enflasyona karşı koruma özelliği var",
+        "Aşırı değerlenme riski mevcut",
+        "Yüksek artış oranları gözleniyor"
+      ],
+      "time_horizon": "kısa vadeli (3-6 ay)"
+    },
+    "risk_analysis": {
+      "identified_risks": [
+        {
+          "type": "Aşırı değerlenme",
+          "level": "yüksek",
+          "description": "Fiyatlar temel göstergelerin üzerinde seyrediyor"
+        },
+        {
+          "type": "Çok yüksek artış oranları",
+          "level": "orta-yüksek",
+          "description": "Bazı göstergelerde %32.2 gibi çok yüksek artışlar"
+        }
+      ],
+      "risk_level": "yüksek",
+      "risk_count": 2
+    }
+  },
+  "summary": "\n        📊 HABER ANALİZ ÖZETİ\n        ============================================================\n        📰 Başlık: Konut fiyatı Eylül'de reel değer kaybını sürdürdü\n        🎭 Sentiment: 📈 Olumlu \n          - Pozitif: %43.6\n          - Negatif: %10.3\n          - Nötr: %46.2\n        \n        🎯 Aktif Kurallar:\n          • K1: Düşük Kredi Faizi ve Talep Artışı (3 puan)\n  • K2: Arz Azlığı ve Fiyat Artışı (2 puan)\n  • K3: Enflasyona Karşı Koruma (1 puan)\n  • K4: Aşırı Değerlenme Riski (-2 puan)\n  • K6: Yüksek Artış Oranları (1 puan)\n        \n        💰 Toplam Puan: 5\n        \n        ⚡ ÖNERİ: 🟢 AL\n        🎯 Güven Düzeyi: ÇOK YÜKSEK\n        ⏰ Zaman Dilimi: kısa vadeli (3-6 ay)\n        \n📋 Detaylar:\n  • Düşük kredi faizleri alım için uygun ortam\n  • Arz azlığı fiyatları destekliyor\n  • Enflasyona karşı koruma özelliği var\n  • Aşırı değerlenme riski mevcut\n  • Yüksek artış oranları gözleniyor\n        "
+}
