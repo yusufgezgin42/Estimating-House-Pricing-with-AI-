@@ -1,0 +1,2541 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emlak Değerleme ve Öneri Sistemi</title>
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: #f5f5f5;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+
+      .description {
+        color: #7f8c8d;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .app-container {
+        display: flex;
+        flex: 1;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .map-container {
+        flex: 3;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+
+      .controls {
+        flex: 1;
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .control-section {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+      }
+
+      .control-section:last-child {
+        border-bottom: none;
+      }
+
+      h2 {
+        color: #2c3e50;
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+      }
+
+      .button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 12px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        font-weight: 500;
+        width: 100%;
+        margin-bottom: 10px;
+        font-size: 1rem;
+      }
+
+      .button:hover {
+        background-color: #2980b9;
+      }
+
+      .button.remove {
+        background-color: #e74c3c;
+      }
+
+      .button.remove:hover {
+        background-color: #c0392b;
+      }
+
+      .button.clear {
+        background-color: #f39c12;
+      }
+
+      .button.clear:hover {
+        background-color: #d35400;
+      }
+
+      .button.next {
+        background-color: #27ae60;
+        font-size: 1.1rem;
+        padding: 15px;
+        margin-top: 10px;
+      }
+
+      .button.next:hover {
+        background-color: #219a52;
+      }
+
+      .button.next:disabled {
+        background-color: #95a5a6;
+        cursor: not-allowed;
+      }
+
+      .address {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        margin-top: 10px;
+        min-height: 80px;
+      }
+
+      .coordinates {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 5px;
+        border-top: 1px solid #ddd;
+        padding-top: 5px;
+      }
+
+      .marker-list {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        padding: 10px;
+      }
+
+      .marker-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px;
+        border-bottom: 1px solid #f1f1f1;
+        cursor: pointer;
+      }
+
+      .marker-item:hover {
+        background-color: #f8f9fa;
+      }
+
+      .marker-item:last-child {
+        border-bottom: none;
+      }
+
+      .marker-info {
+        flex: 1;
+      }
+
+      .marker-address {
+        font-size: 0.85rem;
+        color: #555;
+      }
+
+      .marker-actions button {
+        background: none;
+        border: none;
+        color: #e74c3c;
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+
+      .loading {
+        color: #3498db;
+        font-style: italic;
+      }
+
+      .error {
+        color: #e74c3c;
+        font-style: italic;
+      }
+
+      .selected-marker {
+        background-color: #e3f2fd !important;
+        border-left: 4px solid #2196f3;
+      }
+
+      /* Property Form Styles */
+      .property-form {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .form-section {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .form-section:last-child {
+        border-bottom: none;
+      }
+
+      .form-title {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        font-size: 1.4rem;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      .form-label.required::after {
+        content: " *";
+        color: #e74c3c;
+      }
+
+      .form-select,
+      .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        background-color: #fff;
+      }
+
+      .form-select:focus,
+      .form-input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+      }
+
+      .form-row {
+        display: flex;
+        gap: 15px;
+      }
+
+      .form-col {
+        flex: 1;
+      }
+
+      .form-help {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        margin-top: 5px;
+      }
+
+      .form-warning {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 4px;
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #856404;
+      }
+
+      .back-button {
+        background-color: #95a5a6;
+        margin-bottom: 20px;
+      }
+
+      .back-button:hover {
+        background-color: #7f8c8d;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+      }
+
+      .checkbox-group label {
+        margin-bottom: 0;
+        font-weight: normal;
+      }
+
+      /* Results Section Styles */
+      .results-section {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #3498db;
+      }
+
+      .prediction-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .prediction-price {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin: 10px 0;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .prediction-confidence {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+      }
+
+      .progress-bar {
+        height: 20px;
+        background-color: #ecf0f1;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 15px 0;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #2ecc71, #27ae60);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+      }
+
+      .suggestions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .suggestion-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e0e0e0;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .suggestion-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .suggestion-card h4 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+      }
+
+      .suggestion-card p {
+        color: #7f8c8d;
+        margin-bottom: 15px;
+      }
+
+      .improvement-list {
+        list-style: none;
+        padding-left: 0;
+      }
+
+      .improvement-list li {
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .improvement-list li:last-child {
+        border-bottom: none;
+      }
+
+      .cost {
+        font-weight: bold;
+        color: #27ae60;
+      }
+
+      .roi {
+        font-weight: bold;
+        color: #e67e22;
+      }
+
+      .comparison-chart {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+      }
+
+      .comparison-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .comparison-item:last-child {
+        border-bottom: none;
+      }
+
+      .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+        padding: 10px;
+      }
+
+      .step {
+        display: flex;
+        align-items: center;
+        margin: 0 10px;
+        color: #95a5a6;
+      }
+
+      .step.active {
+        color: #3498db;
+        font-weight: bold;
+      }
+
+      .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #ecf0f1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px;
+      }
+
+      .step.active .step-number {
+        background-color: #3498db;
+        color: white;
+      }
+
+      .step-completed .step-number {
+        background-color: #27ae60;
+        color: white;
+      }
+
+      .api-url {
+        font-family: monospace;
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+        font-size: 0.9rem;
+        word-break: break-all;
+      }
+
+      .api-response {
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 15px;
+        margin-top: 20px;
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 0.85rem;
+        white-space: pre-wrap;
+      }
+
+      .tab-container {
+        display: flex;
+        border-bottom: 2px solid #e0e0e0;
+        margin-bottom: 20px;
+        overflow-x: auto;
+      }
+
+      .tab {
+        padding: 12px 24px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #7f8c8d;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s;
+        white-space: nowrap;
+      }
+
+      .tab:hover {
+        color: #3498db;
+      }
+
+      .tab.active {
+        color: #3498db;
+        border-bottom-color: #3498db;
+        background-color: #f8f9fa;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      /* Kullanıcı Profili Stilleri */
+      .profile-option {
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .profile-option:hover {
+        border-color: #3498db;
+        background: #e3f2fd;
+      }
+
+      .profile-option.selected {
+        border-color: #27ae60;
+        background: #e8f6f3;
+      }
+
+      .profile-option h4 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .profile-icon {
+        font-size: 1.5rem;
+      }
+
+      /* Haber Kartları */
+      .news-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #3498db;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .news-card.positive {
+        border-left-color: #27ae60;
+      }
+
+      .news-card.negative {
+        border-left-color: #e74c3c;
+      }
+
+      .news-card.neutral {
+        border-left-color: #f39c12;
+      }
+
+      .news-source {
+        font-size: 0.8rem;
+        color: #7f8c8d;
+        margin-bottom: 5px;
+      }
+
+      .news-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .news-date {
+        font-size: 0.8rem;
+        color: #95a5a6;
+        text-align: right;
+      }
+
+      /* Eylem Planı */
+      .action-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .action-item:last-child {
+        border-bottom: none;
+      }
+
+      .action-icon {
+        font-size: 1.2rem;
+        margin-right: 10px;
+        margin-top: 2px;
+      }
+
+      .action-content {
+        flex: 1;
+      }
+
+      .action-time {
+        font-size: 0.9rem;
+        color: #3498db;
+        font-weight: 500;
+      }
+
+      .action-priority {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        margin-left: 10px;
+      }
+
+      .priority-high {
+        background: #ffeaa7;
+        color: #856404;
+      }
+
+      .priority-medium {
+        background: #d6eaf8;
+        color: #21618c;
+      }
+
+      .priority-low {
+        background: #d5f4e6;
+        color: #27ae60;
+      }
+
+      /* Risk Göstergesi */
+      .risk-indicator {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-left: 10px;
+      }
+
+      .risk-low {
+        background: #d5f4e6;
+        color: #27ae60;
+      }
+
+      .risk-medium {
+        background: #ffeaa7;
+        color: #f39c12;
+      }
+
+      .risk-high {
+        background: #fadbd8;
+        color: #e74c3c;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 20px;
+        padding: 15px;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 768px) {
+        .app-container {
+          flex-direction: column;
+        }
+
+        .map-container {
+          height: 50vh;
+        }
+
+        .form-row {
+          flex-direction: column;
+          gap: 0;
+        }
+
+        .suggestions-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .step-indicator {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .step {
+          margin: 5px 0;
+        }
+
+        .tab-container {
+          flex-wrap: wrap;
+        }
+
+        .tab {
+          flex: 1;
+          min-width: 120px;
+          text-align: center;
+          padding: 10px;
+        }
+      }
+
+      /* Haber İstatistikleri */
+      .news-stats {
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+        margin: 20px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+      }
+
+      .stat-item {
+        flex: 1;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .stat-positive .stat-value {
+        color: #27ae60;
+      }
+
+      .stat-negative .stat-value {
+        color: #e74c3c;
+      }
+
+      .stat-neutral .stat-value {
+        color: #3498db;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Emlak Değerleme ve Öneri Sistemi</h1>
+        <p class="description">
+          Önce haritadan konumunuzu seçin, ardından ev özelliklerini belirleyin,
+          kullanıcı profilinizi oluşturun ve haber bazlı öneriler alın
+        </p>
+      </header>
+
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step step-completed" id="step1">
+          <span class="step-number">1</span>
+          <span class="step-label">Konum Seçimi</span>
+        </div>
+        <div class="step" id="step2">
+          <span class="step-number">2</span>
+          <span class="step-label">Özellikler</span>
+        </div>
+        <div class="step" id="step3">
+          <span class="step-number">3</span>
+          <span class="step-label">Kullanıcı Profili</span>
+        </div>
+        <div class="step" id="step4">
+          <span class="step-number">4</span>
+          <span class="step-label">Tahmin & Öneriler</span>
+        </div>
+      </div>
+
+      <!-- Tab Container -->
+      <div class="tab-container">
+        <button class="tab active" onclick="showTab('tab1')">
+          Harita ve Konum
+        </button>
+        <button class="tab" onclick="showTab('tab2')">Ev Özellikleri</button>
+        <button class="tab" onclick="showTab('tab3')">Kullanıcı Profili</button>
+        <button class="tab" onclick="showTab('tab4')">Tahmin & Öneriler</button>
+      </div>
+
+      <!-- Tab 1: Map Section -->
+      <div id="tab1" class="tab-content active">
+        <div class="app-container">
+          <div class="map-container">
+            <div id="map"></div>
+          </div>
+
+          <div class="controls">
+            <div class="control-section">
+              <h2>Harita Kontrolleri</h2>
+              <button id="addMarkerMode" class="button">
+                İşaretçi Ekleme Modu
+              </button>
+              <button id="removeMarkerMode" class="button remove">
+                İşaretçi Silme Modu
+              </button>
+              <button id="clearMarkers" class="button clear">
+                Tüm İşaretçileri Temizle
+              </button>
+            </div>
+
+            <div class="control-section">
+              <h2>Seçilen Konum</h2>
+              <div id="address" class="address">
+                <div class="loading">Konum bilgisi yükleniyor...</div>
+              </div>
+            </div>
+
+            <div class="control-section">
+              <h2>İşaretçilerim</h2>
+              <div id="markerList" class="marker-list">
+                <p>Henüz işaretçi eklenmedi</p>
+              </div>
+            </div>
+
+            <div class="control-section">
+              <h2>İşlemler</h2>
+              <button
+                id="nextToProperties"
+                class="button next"
+                onclick="showTab('tab2')"
+                disabled
+              >
+                Ev Özelliklerini Seç →
+              </button>
+              <button id="resetView" class="button">
+                Varsayılan Görünüme Dön
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Property Form -->
+      <div id="tab2" class="tab-content">
+        <div class="property-form">
+          <h2 class="form-title">Ev Özelliklerini Seçin</h2>
+
+          <div class="form-section">
+            <h3>Temel Bilgiler</h3>
+            <div class="form-row">
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Konut Tipi</label>
+                  <select class="form-select" id="propertyType">
+                    <option value="">Seçiniz</option>
+                    <option value="0">Daire</option>
+                    <option value="1">Residence</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Net Metrekare (m²)</label>
+                  <input
+                    type="number"
+                    class="form-input"
+                    id="netArea"
+                    placeholder="Ör: 110"
+                    value="110"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Brüt Metrekare (m²)</label>
+                  <input
+                    type="number"
+                    class="form-input"
+                    id="grossArea"
+                    placeholder="Ör: 120"
+                    value="120"
+                  />
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Yatak Odası Sayısı</label>
+                  <select class="form-select" id="bedroomCount">
+                    <option value="">Seçiniz</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2" selected>2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Oda ve Banyo Bilgileri</h3>
+            <div class="form-row">
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Mutfak Sayısı</label>
+                  <select class="form-select" id="kitchenCount">
+                    <option value="">Seçiniz</option>
+                    <option value="0">0</option>
+                    <option value="1" selected>1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Banyo Sayısı</label>
+                  <select class="form-select" id="bathroomCount">
+                    <option value="">Seçiniz</option>
+                    <option value="0">0</option>
+                    <option value="1" selected>1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Bina ve Kat Bilgileri</h3>
+            <div class="form-row">
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Bulunduğu Kat</label>
+                  <select class="form-select" id="floorNumber">
+                    <option value="">Seçiniz</option>
+                    <option value="-1">-1 (Bodrum)</option>
+                    <option value="0">0 (Giriş)</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                    <option value="21">21</option>
+                    <option value="22">22</option>
+                    <option value="23">23</option>
+                    <option value="24">24</option>
+                    <option value="25">25</option>
+                    <option value="26">26</option>
+                    <option value="27">27</option>
+                    <option value="28">28</option>
+                    <option value="29">29</option>
+                    <option value="30">30</option>
+                    <option value="31">31</option>
+                    <option value="32">32</option>
+                    <option value="33">33</option>
+                    <option value="35">35</option>
+                    <option value="99">99 (Çatı Katı)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Isıtma Tipi</label>
+                  <select class="form-select" id="heatingType">
+                    <option value="">Seçiniz</option>
+                    <option value="0">Yerden Isıtma</option>
+                    <option value="1" selected>Kombi Doğalgaz</option>
+                    <option value="2">Klimalı</option>
+                    <option value="3">Merkezi Doğalgaz</option>
+                    <option value="4">Diğer</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Kullanım ve Durum Bilgileri</h3>
+            <div class="form-row">
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Kullanım Durumu</label>
+                  <select class="form-select" id="usageStatus">
+                    <option value="">Seçiniz</option>
+                    <option value="0">Kiracı Oturuyor</option>
+                    <option value="1" selected>Boş</option>
+                    <option value="2">Mülk Sahibi Oturuyor</option>
+                    <option value="3">Diğer / Bilinmiyor</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Krediye Uygunluk</label>
+                  <select class="form-select" id="creditEligibility">
+                    <option value="">Seçiniz</option>
+                    <option value="0">Krediye Uygun</option>
+                    <option value="1" selected>Krediye Uygun Değil</option>
+                    <option value="2">Bilinmiyor</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Tapu Durumu</label>
+                  <select class="form-select" id="deedStatus">
+                    <option value="">Seçiniz</option>
+                    <option value="0">Kat Mülkiyeti</option>
+                    <option value="1" selected>Kat İrtifakı</option>
+                    <option value="2">Hisseli Tapu</option>
+                    <option value="3">Arsa Tapulu</option>
+                    <option value="4">Müstakil / Kooperatif / Diğer</option>
+                    <option value="5">Bilinmiyor</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Fiyat Durumu</label>
+                  <select class="form-select" id="priceStatus">
+                    <option value="">Seçiniz</option>
+                    <option value="0" selected>Genel Fiyat</option>
+                    <option value="1">Birim Fiyat</option>
+                    <option value="2">Bilinmiyor</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Diğer Özellikler</h3>
+            <div class="checkbox-group">
+              <input type="checkbox" id="inComplex" checked />
+              <label for="inComplex">Site İçerisinde</label>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top: 30px">
+            <div class="form-col">
+              <button class="button back-button" onclick="showTab('tab1')">
+                ← Haritaya Dön
+              </button>
+            </div>
+            <div class="form-col">
+              <button class="button next" onclick="showTab('tab3')">
+                Kullanıcı Profili Oluştur →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Kullanıcı Profili -->
+      <div id="tab3" class="tab-content">
+        <div class="property-form">
+          <h2 class="form-title">Kullanıcı Profilinizi Oluşturun</h2>
+          <p class="form-help">
+            Bu bilgiler size özel "Sat/Al/Tut" önerileri almanız için
+            kullanılacaktır.
+          </p>
+
+          <div class="form-section">
+            <h3>Kullanıcı Tipiniz</h3>
+            <p class="form-help">Hangi kategoride olduğunuzu seçin:</p>
+
+            <div
+              class="profile-option"
+              onclick="selectProfile('oturan')"
+              id="profile-oturan"
+            >
+              <h4><span class="profile-icon">🏠</span> Evde Oturuyorum</h4>
+              <p>
+                Evimde ikamet ediyorum, satmayı veya değerlendirmeyi düşünüyorum
+              </p>
+            </div>
+
+            <div
+              class="profile-option"
+              onclick="selectProfile('yatirimci')"
+              id="profile-yatirimci"
+            >
+              <h4><span class="profile-icon">💰</span> Yatırımcıyım</h4>
+              <p>
+                Gayrimenkulü yatırım için aldım/almayı düşünüyorum, kira geliri
+                hedefliyorum
+              </p>
+            </div>
+
+            <div
+              class="profile-option"
+              onclick="selectProfile('spekulator')"
+              id="profile-spekulator"
+            >
+              <h4><span class="profile-icon">📈</span> Spekülatörüm</h4>
+              <p>
+                Kısa vadeli kar için alım-satım yapıyorum, fiyat hareketlerinden
+                kar etmek istiyorum
+              </p>
+            </div>
+
+            <div
+              class="profile-option"
+              onclick="selectProfile('nakit')"
+              id="profile-nakit"
+            >
+              <h4><span class="profile-icon">💵</span> Nakit İhtiyacım Var</h4>
+              <p>Acil nakit ihtiyacım var, hızlı satış yapmak istiyorum</p>
+            </div>
+
+            <input type="hidden" id="selectedProfile" value="oturan" />
+          </div>
+
+          <div class="form-section">
+            <h3>Yatırım Tercihleriniz</h3>
+
+            <div class="form-row">
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Yatırım Vadesi</label>
+                  <select class="form-select" id="investmentTerm">
+                    <option value="kisa">Kısa vade (0-1 yıl)</option>
+                    <option value="orta" selected>Orta vade (1-3 yıl)</option>
+                    <option value="uzun">Uzun vade (3+ yıl)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Risk Toleransınız</label>
+                  <select class="form-select" id="riskTolerance">
+                    <option value="dusuk">Düşük (Güvenli yatırım)</option>
+                    <option value="orta" selected>Orta (Dengeli)</option>
+                    <option value="yuksek">
+                      Yüksek (Yüksek getiri için risk alırım)
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">Ana Hedefiniz</label>
+                  <select class="form-select" id="primaryGoal">
+                    <option value="kar">Maksimum kar elde etmek</option>
+                    <option value="kira">Düzenli kira geliri</option>
+                    <option value="deger_koruma" selected>
+                      Değer koruma (Enflasyona karşı)
+                    </option>
+                    <option value="nakit">Acil nakit ihtiyacı</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-col">
+                <div class="form-group">
+                  <label class="form-label required">İşlem Aciliyeti</label>
+                  <select class="form-select" id="urgencyLevel">
+                    <option value="yok" selected>Aciliyet yok</option>
+                    <option value="dusuk">Düşük aciliyet (3-6 ay)</option>
+                    <option value="yuksek">Yüksek aciliyet (0-3 ay)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Ek Bilgiler</h3>
+            <div class="checkbox-group">
+              <input type="checkbox" id="alternativeInvestment" checked />
+              <label for="alternativeInvestment"
+                >Alternatif yatırım seçeneklerim var (borsa, döviz, altın
+                vb.)</label
+              >
+            </div>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="realEstateExperience" />
+              <label for="realEstateExperience"
+                >Daha önce gayrimenkul alım-satım tecrübem var</label
+              >
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top: 30px">
+            <div class="form-col">
+              <button class="button back-button" onclick="showTab('tab2')">
+                ← Özelliklere Dön
+              </button>
+            </div>
+            <div class="form-col">
+              <button
+                class="button next"
+                onclick="showTab('tab4'); getAdvancedAnalysis();"
+              >
+                Analiz ve Önerileri Al →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Gelişmiş Analiz ve Öneriler -->
+      <div id="tab4" class="tab-content">
+        <div class="results-section">
+          <div class="results-header">
+            <h2>Gelişmiş Analiz ve Kişiselleştirilmiş Öneriler</h2>
+            <button class="button" onclick="showTab('tab3')">
+              ← Profili Düzenle
+            </button>
+          </div>
+
+          <!-- Loading State -->
+          <div id="advancedLoading" style="text-align: center; padding: 50px">
+            <div class="loading" style="font-size: 1.2rem">
+              <div style="margin-bottom: 20px">🧠 Zeki analiz yapılıyor...</div>
+              <div>• Haberler analiz ediliyor</div>
+              <div>• Piyasa trendleri inceleniyor</div>
+              <div>• Kişiselleştirilmiş öneriler hazırlanıyor</div>
+            </div>
+            <div class="progress-bar" style="width: 100%; margin: 30px auto">
+              <div
+                class="progress-fill"
+                style="width: 0%"
+                id="advancedLoadingProgress"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Results Container -->
+          <div id="advancedResults" style="display: none">
+            <!-- 1. Öneri Kartı -->
+            <div class="prediction-card" id="recommendationCard">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                "
+              >
+                <h3 style="margin: 0">ÖNERİMİZ</h3>
+                <div id="recommendationEmoji" style="font-size: 2rem">🤔</div>
+              </div>
+              <div class="prediction-price" id="recommendationText">
+                ANALİZ YAPILIYOR
+              </div>
+              <div id="recommendationScore" class="prediction-confidence">
+                Öneri Puanı: <span id="scoreValue">-</span>/10
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="recommendationBar"></div>
+              </div>
+              <p id="recommendationDescription">Yükleniyor...</p>
+              <div id="riskLevel" style="margin-top: 10px"></div>
+            </div>
+
+            <!-- 2. Haber Analizi -->
+            <div class="suggestion-card" style="margin-top: 20px">
+              <h4>📰 Haber Bazlı Piyasa Analizi</h4>
+
+              <div class="news-stats">
+                <div class="stat-item stat-positive">
+                  <div class="stat-value" id="positiveNews">0</div>
+                  <div class="stat-label">Pozitif Haber</div>
+                </div>
+                <div class="stat-item stat-negative">
+                  <div class="stat-value" id="negativeNews">0</div>
+                  <div class="stat-label">Negatif Haber</div>
+                </div>
+                <div class="stat-item stat-neutral">
+                  <div class="stat-value" id="totalNews">0</div>
+                  <div class="stat-label">Toplam Haber</div>
+                </div>
+              </div>
+
+              <div
+                id="newsList"
+                style="max-height: 300px; overflow-y: auto; margin-top: 15px"
+              >
+                <!-- Haberler buraya gelecek -->
+              </div>
+            </div>
+
+            <!-- 3. Eylem Planı ve Risk Analizi -->
+            <div class="suggestions-grid" style="margin-top: 20px">
+              <div class="suggestion-card">
+                <h4>📋 Eylem Planı</h4>
+                <div id="actionPlan">
+                  <!-- Eylem planı buraya gelecek -->
+                </div>
+              </div>
+
+              <div class="suggestion-card">
+                <h4>⚠️ Risk Analizi</h4>
+                <div id="riskAnalysis">
+                  <!-- Risk analizi buraya gelecek -->
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Değer Tahmini -->
+            <div class="suggestion-card" style="margin-top: 20px">
+              <h4>💰 Ev Değerleme Sonucu</h4>
+              <div id="valuePrediction">
+                <!-- Değer tahmini buraya gelecek -->
+              </div>
+            </div>
+
+            <!-- 5. Gelecek Tahmini -->
+            <div class="comparison-chart" style="margin-top: 20px">
+              <h4>📈 Gelecek Değer Tahmini</h4>
+              <div id="futurePrediction">
+                <!-- Gelecek tahmini buraya gelecek -->
+              </div>
+            </div>
+
+            <!-- 6. Detaylı JSON -->
+            <div style="margin-top: 30px">
+              <h4>📊 Detaylı Analiz Raporu</h4>
+              <div class="api-response" id="advancedApiResponse">
+                Analiz raporu yükleniyor...
+              </div>
+              <div style="margin-top: 10px; text-align: right">
+                <button class="button" onclick="downloadAdvancedReport()">
+                  📥 Raporu İndir
+                </button>
+                <button
+                  class="button"
+                  onclick="shareAnalysis()"
+                  style="margin-left: 10px"
+                >
+                  🔗 Paylaş
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <p>
+          Görseller © 2025 Terrametrics, CNES/Airbus, Maxar, Landsat/Copernicus,
+          Harita Verileri © 2025 Google | Python API: http://localhost:5001
+        </p>
+      </footer>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+      // ====================
+      // HARITA KODLARI
+      // ====================
+      const map = L.map("map", {
+        center: [41.0082, 28.9784],
+        zoom: 12,
+        zoomControl: true,
+      });
+
+      const googleSat = L.tileLayer(
+        "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+        {
+          attribution:
+            "Görseller © 2025 Terrametrics, CNES/Airbus, Maxar, Landsat/Copernicus, Harita Verileri © 2025 Google",
+          maxZoom: 20,
+        }
+      ).addTo(map);
+
+      let markers = [];
+      let addMarkerMode = false;
+      let removeMarkerMode = false;
+      let markerCounter = 1;
+      let selectedMarker = null;
+
+      // DOM elements
+      const addressDisplay = document.getElementById("address");
+      const markerList = document.getElementById("markerList");
+      const addMarkerModeBtn = document.getElementById("addMarkerMode");
+      const removeMarkerModeBtn = document.getElementById("removeMarkerMode");
+      const clearMarkersBtn = document.getElementById("clearMarkers");
+      const resetViewBtn = document.getElementById("resetView");
+      const nextToPropertiesBtn = document.getElementById("nextToProperties");
+
+      // Form elements
+      const formElements = {
+        propertyType: document.getElementById("propertyType"),
+        netArea: document.getElementById("netArea"),
+        grossArea: document.getElementById("grossArea"),
+        bedroomCount: document.getElementById("bedroomCount"),
+        kitchenCount: document.getElementById("kitchenCount"),
+        bathroomCount: document.getElementById("bathroomCount"),
+        floorNumber: document.getElementById("floorNumber"),
+        heatingType: document.getElementById("heatingType"),
+        usageStatus: document.getElementById("usageStatus"),
+        creditEligibility: document.getElementById("creditEligibility"),
+        deedStatus: document.getElementById("deedStatus"),
+        priceStatus: document.getElementById("priceStatus"),
+        inComplex: document.getElementById("inComplex"),
+      };
+
+      // ====================
+      // TAB YÖNETİMİ
+      // ====================
+      function showTab(tabName) {
+        // Tüm tabları gizle
+        document.querySelectorAll(".tab-content").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Tüm tab butonlarını pasif yap
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Seçilen tabı göster
+        document.getElementById(tabName).classList.add("active");
+
+        // Seçilen tab butonunu aktif yap
+        document
+          .querySelector(`[onclick="showTab('${tabName}')"]`)
+          .classList.add("active");
+
+        // Step indicator'ı güncelle
+        updateStepIndicator(tabName);
+      }
+
+      function updateStepIndicator(tabName) {
+        // Tüm step'leri sıfırla
+        document.getElementById("step1").className = "step";
+        document.getElementById("step2").className = "step";
+        document.getElementById("step3").className = "step";
+        document.getElementById("step4").className = "step";
+
+        // Seçilen tab'a göre step'leri güncelle
+        if (tabName === "tab1") {
+          document.getElementById("step1").className = "step active";
+          if (selectedMarker) {
+            document.getElementById("step1").className = "step step-completed";
+          }
+        } else if (tabName === "tab2") {
+          document.getElementById("step1").className = "step step-completed";
+          document.getElementById("step2").className = "step active";
+        } else if (tabName === "tab3") {
+          document.getElementById("step1").className = "step step-completed";
+          document.getElementById("step2").className = "step step-completed";
+          document.getElementById("step3").className = "step active";
+        } else if (tabName === "tab4") {
+          document.getElementById("step1").className = "step step-completed";
+          document.getElementById("step2").className = "step step-completed";
+          document.getElementById("step3").className = "step step-completed";
+          document.getElementById("step4").className = "step active";
+        }
+      }
+
+      // ====================
+      // PROFİL SEÇİMİ
+      // ====================
+      function selectProfile(profileType) {
+        // Tüm profilleri seçimden kaldır
+        document.querySelectorAll(".profile-option").forEach((option) => {
+          option.classList.remove("selected");
+        });
+
+        // Seçilen profili işaretle
+        document
+          .getElementById(`profile-${profileType}`)
+          .classList.add("selected");
+        document.getElementById("selectedProfile").value = profileType;
+
+        // Profil tipine göre otomatik ayarlar
+        updateProfileSettings(profileType);
+      }
+
+      function updateProfileSettings(profileType) {
+        const investmentTerm = document.getElementById("investmentTerm");
+        const riskTolerance = document.getElementById("riskTolerance");
+        const primaryGoal = document.getElementById("primaryGoal");
+        const urgencyLevel = document.getElementById("urgencyLevel");
+
+        switch (profileType) {
+          case "oturan":
+            investmentTerm.value = "orta";
+            riskTolerance.value = "orta";
+            primaryGoal.value = "deger_koruma";
+            urgencyLevel.value = "yok";
+            break;
+          case "yatirimci":
+            investmentTerm.value = "uzun";
+            riskTolerance.value = "orta";
+            primaryGoal.value = "kira";
+            urgencyLevel.value = "dusuk";
+            break;
+          case "spekulator":
+            investmentTerm.value = "kisa";
+            riskTolerance.value = "yuksek";
+            primaryGoal.value = "kar";
+            urgencyLevel.value = "yuksek";
+            break;
+          case "nakit":
+            investmentTerm.value = "kisa";
+            riskTolerance.value = "dusuk";
+            primaryGoal.value = "nakit";
+            urgencyLevel.value = "yuksek";
+            break;
+        }
+      }
+
+      // Sayfa yüklendiğinde varsayılan profili seç
+      window.addEventListener("load", function () {
+        selectProfile("oturan");
+        populateFormWithDefaults();
+      });
+
+      // ====================
+      // FORM DEFAULTS
+      // ====================
+      function populateFormWithDefaults() {
+        formElements.propertyType.value = "0";
+        formElements.netArea.value = "110";
+        formElements.grossArea.value = "120";
+        formElements.bedroomCount.value = "2";
+        formElements.kitchenCount.value = "1";
+        formElements.bathroomCount.value = "1";
+        formElements.floorNumber.value = "0";
+        formElements.heatingType.value = "1";
+        formElements.usageStatus.value = "1";
+        formElements.creditEligibility.value = "1";
+        formElements.deedStatus.value = "1";
+        formElements.priceStatus.value = "0";
+        formElements.inComplex.checked = true;
+      }
+
+      // ====================
+      // GELİŞMİŞ ANALİZ FONKSİYONLARI
+      // ====================
+      async function getAdvancedAnalysis() {
+        // 1. Tüm verileri topla
+        const evBilgileri = collectPropertyData();
+        const kullaniciBilgileri = collectUserProfile();
+
+        if (!evBilgileri || !selectedMarker) {
+          alert("Lütfen önce konum seçin ve formu doldurun!");
+          showTab("tab1");
+          return;
+        }
+
+        // Tab'ı göster ve loading başlat
+        showTab("tab4");
+        document.getElementById("advancedLoading").style.display = "block";
+        document.getElementById("advancedResults").style.display = "none";
+
+        // Loading animasyonu
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += 3;
+          document.getElementById(
+            "advancedLoadingProgress"
+          ).style.width = `${Math.min(progress, 90)}%`;
+        }, 100);
+
+        try {
+          // JSON verisini oluştur
+          const jsonData = {
+            emlakDegerleme: {
+              konumBilgisi: {
+                adres: {
+                  il: selectedMarker.address.details.il || "İstanbul",
+                  ilce: selectedMarker.address.details.ilce || "Esenyurt",
+                  mahalle: selectedMarker.address.details.mahalle || "",
+                },
+                koordinatlar: {
+                  enlem: selectedMarker.latlng.lat,
+                  boylam: selectedMarker.latlng.lng,
+                },
+              },
+              ozellikler: evBilgileri,
+            },
+            kullaniciBilgileri: kullaniciBilgileri,
+          };
+
+          console.log("Gelişmiş analiz için veri:", jsonData);
+
+          // API'ye gönder (demo mod için 5001 portu)
+          const response = await fetch(
+            "http://localhost:5001/advanced-predict",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(jsonData),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`API hatası: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          // Sonuçları göster
+          displayAdvancedResults(result);
+        } catch (error) {
+          console.error("Gelişmiş analiz hatası:", error);
+          // API çalışmıyorsa demo verileri göster
+          displayDemoAdvancedResults();
+        } finally {
+          clearInterval(progressInterval);
+          document.getElementById("advancedLoading").style.display = "none";
+          document.getElementById("advancedResults").style.display = "block";
+          document.getElementById("advancedLoadingProgress").style.width =
+            "100%";
+        }
+      }
+
+      function collectPropertyData() {
+        // Form verilerini topla
+        return {
+          tipi: parseInt(formElements.propertyType.value),
+          net_metrekare: parseInt(formElements.netArea.value),
+          brut_metrekare: parseInt(formElements.grossArea.value),
+          yatak_odasi_sayisi: parseInt(formElements.bedroomCount.value),
+          mutfak_sayisi: parseInt(formElements.kitchenCount.value),
+          bulundugu_kat_int: parseInt(formElements.floorNumber.value),
+          isitma_code: parseInt(formElements.heatingType.value),
+          kullanim_durumu_code: parseInt(formElements.usageStatus.value),
+          krediye_uygun_code: parseInt(formElements.creditEligibility.value),
+          tapu_durumu_code: parseInt(formElements.deedStatus.value),
+          site_icinde_code: formElements.inComplex.checked ? 1 : 0,
+          banyo_sayisi_code: parseInt(formElements.bathroomCount.value),
+          fiyat_durumu_code: parseInt(formElements.priceStatus.value),
+        };
+      }
+
+      function collectUserProfile() {
+        // Kullanıcı profili verilerini topla
+        return {
+          kullanici_tipi: document.getElementById("selectedProfile").value,
+          yatirim_vadesi: document.getElementById("investmentTerm").value,
+          risk_toleransi: document.getElementById("riskTolerance").value,
+          aciliyet: document.getElementById("urgencyLevel").value,
+          hedef: document.getElementById("primaryGoal").value,
+          alternatif_yatirim: document.getElementById("alternativeInvestment")
+            .checked,
+          tecrube: document.getElementById("realEstateExperience").checked,
+        };
+      }
+
+      function displayAdvancedResults(result) {
+        // 1. Öneri kartını güncelle
+        const oneri = result.kisisellestirilmis_oneri;
+        document.getElementById("recommendationEmoji").textContent =
+          oneri.emoji;
+        document.getElementById("recommendationText").textContent = oneri.oneri;
+        document.getElementById("scoreValue").textContent = oneri.puan;
+        document.getElementById("recommendationBar").style.width = `${
+          oneri.puan * 10
+        }%`;
+        document.getElementById("recommendationDescription").textContent =
+          oneri.aciklama;
+
+        // Risk seviyesini göster
+        const riskLevel = document.getElementById("riskLevel");
+        riskLevel.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span>Risk Seviyesi:</span>
+            <span class="risk-indicator risk-${
+              oneri.risk_analizi.risk_seviyesi
+            }">
+              ${oneri.risk_analizi.risk_seviyesi.toUpperCase()}
+            </span>
+          </div>
+        `;
+
+        // 2. Haber analizini göster
+        const haberAnaliz = result.haber_bazli_analiz;
+        document.getElementById("positiveNews").textContent =
+          haberAnaliz.pozitif_haber;
+        document.getElementById("negativeNews").textContent =
+          haberAnaliz.negatif_haber;
+        document.getElementById("totalNews").textContent =
+          haberAnaliz.toplam_haber;
+
+        // Haber listesini göster
+        const newsList = document.getElementById("newsList");
+        newsList.innerHTML = "";
+
+        if (haberAnaliz.son_haberler && haberAnaliz.son_haberler.length > 0) {
+          haberAnaliz.son_haberler.forEach((haber) => {
+            const haberElement = document.createElement("div");
+            const haberClass =
+              haber.etki > 0
+                ? "positive"
+                : haber.etki < 0
+                ? "negative"
+                : "neutral";
+            haberElement.className = `news-card ${haberClass}`;
+
+            haberElement.innerHTML = `
+              <div class="news-source">${haber.kaynak}</div>
+              <div class="news-title">${haber.baslik}</div>
+              <div class="news-date">${haber.tarih}</div>
+            `;
+            newsList.appendChild(haberElement);
+          });
+        } else {
+          newsList.innerHTML =
+            '<p style="text-align: center; color: #7f8c8d;">Haber bulunamadı</p>';
+        }
+
+        // 3. Eylem planını göster
+        const actionPlan = document.getElementById("actionPlan");
+        actionPlan.innerHTML = "";
+
+        if (oneri.eylem_plani && oneri.eylem_plani.length > 0) {
+          oneri.eylem_plani.forEach((eylem, index) => {
+            const eylemElement = document.createElement("div");
+            eylemElement.className = "action-item";
+
+            const icons = ["📋", "📅", "💰", "📊", "✅"];
+            const icon = icons[index] || "📌";
+
+            eylemElement.innerHTML = `
+              <div class="action-icon">${icon}</div>
+              <div class="action-content">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>${eylem.eylem}</span>
+                  <span class="action-time">${eylem.sure}</span>
+                </div>
+                <div>
+                  <span class="action-priority priority-${eylem.oncelik}">
+                    ${eylem.oncelik} öncelik
+                  </span>
+                </div>
+              </div>
+            `;
+            actionPlan.appendChild(eylemElement);
+          });
+        }
+
+        // 4. Risk analizini göster
+        const riskAnalysis = document.getElementById("riskAnalysis");
+        const risk = oneri.risk_analizi;
+
+        riskAnalysis.innerHTML = `
+          <div style="margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+              <span>Risk Seviyesi:</span>
+              <span class="risk-indicator risk-${risk.risk_seviyesi}">
+                ${risk.risk_seviyesi.toUpperCase()}
+              </span>
+            </div>
+            <div style="font-size: 0.9rem; color: #7f8c8d; margin-bottom: 15px;">
+              ${risk.risk_aciklamasi}
+            </div>
+            <div style="font-size: 0.9rem;">
+              <strong>Kullanıcı Uyumu:</strong><br>
+              ${risk.kullanici_risk_uyumu}
+            </div>
+          </div>
+          <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+            <div style="font-size: 0.9rem; color: #3498db;">
+              Pozitif Haber Oranı: %${Math.round(
+                risk.pozitif_haber_orani * 100
+              )}
+            </div>
+          </div>
+        `;
+
+        // 5. Değer tahminini göster
+        const valuePrediction = document.getElementById("valuePrediction");
+        const tahmin = result.tahmin;
+
+        valuePrediction.innerHTML = `
+          <div class="comparison-item">
+            <span>Tahmini Değer</span>
+            <strong>${formatCurrency(tahmin.suanki_deger)}</strong>
+          </div>
+          <div class="comparison-item">
+            <span>Birim Fiyat (m²)</span>
+            <span>${formatCurrency(tahmin.birim_fiyat)}/m²</span>
+          </div>
+          <div class="comparison-item">
+            <span>Konum</span>
+            <span>${tahmin.ilce}</span>
+          </div>
+          <div class="comparison-item">
+            <span>Metrekare</span>
+            <span>${tahmin.metrekare} m²</span>
+          </div>
+        `;
+
+        // 6. Gelecek tahminini göster
+        const futurePrediction = document.getElementById("futurePrediction");
+        const gelecek = result.gelecek_tahmini;
+
+        futurePrediction.innerHTML = `
+          <div class="comparison-item">
+            <span>Şu Anki Değer</span>
+            <strong>${formatCurrency(gelecek.suanki_deger)}</strong>
+          </div>
+          <div class="comparison-item">
+            <span>Beklenen Yıllık Artış</span>
+            <span style="color: ${
+              gelecek.beklenen_artis_orani > 0 ? "#27ae60" : "#e74c3c"
+            }">
+              %${gelecek.beklenen_artis_orani}
+            </span>
+          </div>
+          <div class="comparison-item">
+            <span>6 Ay Sonra</span>
+            <span>${formatCurrency(gelecek["6_ay_sonrasi"])}</span>
+          </div>
+          <div class="comparison-item">
+            <span>1 Yıl Sonra</span>
+            <span style="color: #27ae60">${formatCurrency(
+              gelecek["1_yil_sonrasi"]
+            )}</span>
+          </div>
+          <div class="comparison-item">
+            <span>2 Yıl Sonra</span>
+            <span style="color: #2ecc71; font-weight: bold">${formatCurrency(
+              gelecek["2_yil_sonrasi"]
+            )}</span>
+          </div>
+          <div class="comparison-item">
+            <span>Tahmin Güvenilirliği</span>
+            <span>%${Math.round(gelecek.tahmin_guvenilirligi * 100)}</span>
+          </div>
+        `;
+
+        // 7. API yanıtını göster
+        document.getElementById("advancedApiResponse").textContent =
+          JSON.stringify(result, null, 2);
+      }
+
+      function displayDemoAdvancedResults() {
+        // Demo verileri göster (API çalışmazsa)
+        const demoResult = {
+          kisisellestirilmis_oneri: {
+            oneri: "TUT",
+            emoji: "🟢",
+            puan: 7.5,
+            aciklama:
+              "Haber analizine göre piyasa olumlu. Evinizi tutmanız önerilir.",
+            eylem_plani: [
+              {
+                eylem: "Piyasayı takip etmeye devam edin",
+                sure: "sürekli",
+                oncelik: "yuksek",
+              },
+              {
+                eylem: "Küçük iyileştirmeler yapın",
+                sure: "3 ay",
+                oncelik: "orta",
+              },
+              {
+                eylem: "Kira geliri için değerlendirin",
+                sure: "2 ay",
+                oncelik: "orta",
+              },
+              {
+                eylem: "Yıllık değer artışını takip edin",
+                sure: "1 yıl",
+                oncelik: "dusuk",
+              },
+            ],
+            risk_analizi: {
+              risk_seviyesi: "dusuk",
+              risk_aciklamasi: "Piyasa koşulları olumlu, düşük risk",
+              kullanici_risk_uyumu: "Risk seviyesi kullanıcı profiliyle uyumlu",
+              pozitif_haber_orani: 0.75,
+            },
+          },
+          haber_bazli_analiz: {
+            pozitif_haber: 3,
+            negatif_haber: 1,
+            toplam_haber: 4,
+            son_haberler: [
+              {
+                baslik: "Bölgede Talep Artışı Bekleniyor",
+                kaynak: "EmlakKulisi",
+                tarih: new Date().toLocaleDateString("tr-TR"),
+                etki: 1.5,
+              },
+              {
+                baslik: "Yeni Altyapı Projeleri",
+                kaynak: "EmlakNews",
+                tarih: new Date().toLocaleDateString("tr-TR"),
+                etki: 1.2,
+              },
+              {
+                baslik: "Konut Kredisi Faizleri Düşüyor",
+                kaynak: "HürriyetEmlak",
+                tarih: new Date().toLocaleDateString("tr-TR"),
+                etki: 1.8,
+              },
+              {
+                baslik: "İnşaat Maliyetleri Artıyor",
+                kaynak: "Milliyet",
+                tarih: new Date().toLocaleDateString("tr-TR"),
+                etki: -1.0,
+              },
+            ],
+          },
+          tahmin: {
+            suanki_deger: 1850000,
+            birim_fiyat: 16818,
+            ilce: selectedMarker
+              ? selectedMarker.address.details.ilce
+              : "İstanbul",
+            metrekare: 110,
+          },
+          gelecek_tahmini: {
+            suanki_deger: 1850000,
+            beklenen_artis_orani: 6.5,
+            "6_ay_sonrasi": 1965250,
+            "1_yil_sonrasi": 2070500,
+            "2_yil_sonrasi": 2348250,
+            tahmin_guvenilirligi: 0.82,
+          },
+          kullanici_profili: collectUserProfile(),
+          piyasa_puani: 7.5,
+        };
+
+        displayAdvancedResults(demoResult);
+
+        document.getElementById("advancedApiResponse").textContent =
+          "API bağlantı hatası. Demo veriler gösteriliyor.\n\n" +
+          JSON.stringify(demoResult, null, 2);
+      }
+
+      // ====================
+      // YARDIMCI FONKSİYONLAR
+      // ====================
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat("tr-TR", {
+          style: "currency",
+          currency: "TRY",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(amount);
+      }
+
+      function downloadAdvancedReport() {
+        const report = document.getElementById(
+          "advancedApiResponse"
+        ).textContent;
+        const blob = new Blob([report], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+
+        const tarih = new Date().toISOString().split("T")[0];
+        const ilce = selectedMarker
+          ? selectedMarker.address.details.ilce
+          : "İstanbul";
+
+        a.href = url;
+        a.download = `emlak_analiz_raporu_${ilce}_${tarih}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast("Analiz raporu indirildi!");
+      }
+
+      function shareAnalysis() {
+        const oneri = document.getElementById("recommendationText").textContent;
+        const puan = document.getElementById("scoreValue").textContent;
+        const ilce = selectedMarker
+          ? selectedMarker.address.details.ilce
+          : "İstanbul";
+
+        const text = `🏠 Emlak Analiz Sonucu (${ilce}):\n\nÖneri: ${oneri}\nPuan: ${puan}/10\n\nDetaylı rapor için:`;
+
+        if (navigator.share) {
+          navigator.share({
+            title: "Emlak Analiz Raporu",
+            text: text,
+            url: window.location.href,
+          });
+        } else {
+          // Fallback: Copy to clipboard
+          navigator.clipboard.writeText(text);
+          showToast("Analiz sonucu panoya kopyalandı!");
+        }
+      }
+
+      function showToast(message) {
+        const toast = document.createElement("div");
+        toast.textContent = message;
+        toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #27ae60;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 5px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          z-index: 10001;
+          animation: slideIn 0.3s ease-out;
+        `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 3000);
+      }
+
+      // CSS animasyonu ekle
+      const style = document.createElement("style");
+      style.textContent = `
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
+        .risk-dusuk { background: #d5f4e6; color: #27ae60; }
+        .risk-orta { background: #ffeaa7; color: #f39c12; }
+        .risk-yuksek { background: #fadbd8; color: #e74c3c; }
+      `;
+      document.head.appendChild(style);
+
+      // ====================
+      // HARITA FONKSİYONLARI
+      // ====================
+
+      // Adres bilgisi almak için Nominatim API
+      async function getAddress(lat, lng) {
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=tr`
+          );
+
+          if (!response.ok) throw new Error("Nominatim API hatası");
+          const data = await response.json();
+
+          if (data && data.address) {
+            const addressDetails = extractAddressInfo(data);
+            let addressText = "";
+            const parts = [];
+
+            if (addressDetails.mahalle) parts.push(addressDetails.mahalle);
+            if (addressDetails.ilce) parts.push(addressDetails.ilce);
+            if (addressDetails.il) parts.push(addressDetails.il);
+            addressText = parts.join(", ");
+
+            return {
+              fullAddress:
+                addressText || data.display_name || "Adres bulunamadı",
+              details: addressDetails,
+              rawData: data,
+            };
+          }
+          throw new Error("Adres verisi alınamadı");
+        } catch (error) {
+          console.error("Nominatim hatası:", error);
+          return {
+            fullAddress: "Adres bilgisi alınamadı",
+            details: {
+              il: "",
+              ilce: "",
+              mahalle: "",
+              sokak: "",
+              postaKodu: "",
+            },
+            coordinates: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+          };
+        }
+      }
+
+      function extractAddressInfo(data) {
+        const address = data.address || {};
+        let il = "",
+          ilce = "",
+          mahalle = "",
+          sokak = "";
+
+        if (address.state) il = address.state;
+        else if (address.province) il = address.province;
+        else if (address.region) il = address.region;
+        else if (address.city) {
+          const buyuksehirler = [
+            "istanbul",
+            "ankara",
+            "izmir",
+            "bursa",
+            "adana",
+            "antalya",
+            "konya",
+          ];
+          if (buyuksehirler.includes(address.city.toLowerCase()))
+            il = address.city;
+        }
+
+        if (address.county) ilce = address.county;
+        else if (address.city_district) ilce = address.city_district;
+        else if (address.town) ilce = address.town;
+        else if (address.municipality) ilce = address.municipality;
+
+        if (address.suburb) mahalle = address.suburb;
+        else if (address.neighbourhood) mahalle = address.neighbourhood;
+        else if (address.village) mahalle = address.village;
+
+        if (address.road) sokak = address.road;
+
+        if (!il && data.display_name) {
+          const displayName = data.display_name.toLowerCase();
+          const iller = [
+            "adana",
+            "adiyaman",
+            "afyonkarahisar",
+            "ağrı",
+            "amasya",
+            "ankara",
+            "antalya",
+            "artvin",
+            "aydın",
+            "balıkesir",
+            "bilecik",
+            "bingöl",
+            "bitlis",
+            "bolu",
+            "burdur",
+            "bursa",
+            "çanakkale",
+            "çankırı",
+            "çorum",
+            "denizli",
+            "diyarbakır",
+            "edirne",
+            "elazığ",
+            "erzincan",
+            "erzurum",
+            "eskişehir",
+            "gaziantep",
+            "giresun",
+            "gümüşhane",
+            "hakkari",
+            "hatay",
+            "ısparta",
+            "mersin",
+            "istanbul",
+            "izmir",
+            "kars",
+            "kastamonu",
+            "kayseri",
+            "kırklareli",
+            "kırşehir",
+            "kocaeli",
+            "konya",
+            "kütahya",
+            "malatya",
+            "manisa",
+            "kahramanmaraş",
+            "mardin",
+            "muğla",
+            "muş",
+            "nevşehir",
+            "niğde",
+            "ordu",
+            "rize",
+            "sakarya",
+            "samsun",
+            "siirt",
+            "sinop",
+            "sivas",
+            "tekirdağ",
+            "tokat",
+            "trabzon",
+            "tunceli",
+            "şanlıurfa",
+            "uşak",
+            "van",
+            "yozgat",
+            "zonguldak",
+            "aksaray",
+            "bayburt",
+            "karaman",
+            "kırıkkale",
+            "batman",
+            "şırnak",
+            "bartın",
+            "ardahan",
+            "ığdır",
+            "yalova",
+            "karabük",
+            "kilis",
+            "osmaniye",
+            "düzce",
+          ];
+
+          for (const ilAdi of iller) {
+            if (displayName.includes(ilAdi)) {
+              il = ilAdi.charAt(0).toUpperCase() + ilAdi.slice(1);
+              break;
+            }
+          }
+        }
+
+        return {
+          il,
+          ilce,
+          mahalle,
+          sokak,
+          postaKodu: address.postcode || "",
+        };
+      }
+
+      async function displayAddress(latlng) {
+        addressDisplay.innerHTML =
+          '<div class="loading">Konum bilgisi yükleniyor...</div>';
+        const addressInfo = await getAddress(latlng.lat, latlng.lng);
+        let addressHTML = "";
+
+        if (
+          addressInfo.details.il ||
+          addressInfo.details.ilce ||
+          addressInfo.details.mahalle
+        ) {
+          addressHTML = `
+                    <div><strong>İl:</strong> ${
+                      addressInfo.details.il || "Belirtilmemiş"
+                    }</div>
+                    <div><strong>İlçe:</strong> ${
+                      addressInfo.details.ilce || "Belirtilmemiş"
+                    }</div>
+                    <div><strong>Mahalle:</strong> ${
+                      addressInfo.details.mahalle || "Belirtilmemiş"
+                    }</div>
+                    ${
+                      addressInfo.details.sokak
+                        ? `<div><strong>Sokak:</strong> ${addressInfo.details.sokak}</div>`
+                        : ""
+                    }
+                    <div class="coordinates">Koordinatlar: ${latlng.lat.toFixed(
+                      6
+                    )}, ${latlng.lng.toFixed(6)}</div>
+                `;
+        } else if (addressInfo.coordinates) {
+          addressHTML = `
+                    <div class="error">Detaylı adres bilgisi bulunamadı</div>
+                    <div class="coordinates">Koordinatlar: ${addressInfo.coordinates}</div>
+                `;
+        } else {
+          addressHTML = `
+                    <div>${addressInfo.fullAddress}</div>
+                    <div class="coordinates">Koordinatlar: ${latlng.lat.toFixed(
+                      6
+                    )}, ${latlng.lng.toFixed(6)}</div>
+                `;
+        }
+
+        addressDisplay.innerHTML = addressHTML;
+        return addressInfo;
+      }
+
+      // İşaretçi ekleme/silme kontrolleri
+      addMarkerModeBtn.addEventListener("click", function () {
+        addMarkerMode = !addMarkerMode;
+        removeMarkerMode = false;
+
+        if (addMarkerMode) {
+          addMarkerModeBtn.style.backgroundColor = "#27ae60";
+          addMarkerModeBtn.textContent = "İşaretçi Ekleme Modu (Açık)";
+          removeMarkerModeBtn.style.backgroundColor = "#e74c3c";
+          removeMarkerModeBtn.textContent = "İşaretçi Silme Modu";
+          map.getContainer().style.cursor = "crosshair";
+        } else {
+          addMarkerModeBtn.style.backgroundColor = "#3498db";
+          addMarkerModeBtn.textContent = "İşaretçi Ekleme Modu";
+          map.getContainer().style.cursor = "";
+        }
+      });
+
+      removeMarkerModeBtn.addEventListener("click", function () {
+        removeMarkerMode = !removeMarkerMode;
+        addMarkerMode = false;
+
+        if (removeMarkerMode) {
+          removeMarkerModeBtn.style.backgroundColor = "#c0392b";
+          removeMarkerModeBtn.textContent = "İşaretçi Silme Modu (Açık)";
+          addMarkerModeBtn.style.backgroundColor = "#3498db";
+          addMarkerModeBtn.textContent = "İşaretçi Ekleme Modu";
+          map.getContainer().style.cursor = "pointer";
+        } else {
+          removeMarkerModeBtn.style.backgroundColor = "#e74c3c";
+          removeMarkerModeBtn.textContent = "İşaretçi Silme Modu";
+          map.getContainer().style.cursor = "";
+        }
+      });
+
+      clearMarkersBtn.addEventListener("click", function () {
+        if (
+          markers.length > 0 &&
+          confirm("Tüm işaretçileri silmek istediğinizden emin misiniz?")
+        ) {
+          markers.forEach((marker) => map.removeLayer(marker.marker));
+          markers = [];
+          markerCounter = 1;
+          selectedMarker = null;
+          updateMarkerList();
+          nextToPropertiesBtn.disabled = true;
+          addressDisplay.innerHTML =
+            '<div class="loading">Konum bilgisi yükleniyor...</div>';
+        }
+      });
+
+      resetViewBtn.addEventListener("click", function () {
+        map.setView([41.0082, 28.9784], 12);
+      });
+
+      function selectMarker(markerId) {
+        selectedMarker = markers.find((m) => m.id === markerId);
+        document.querySelectorAll(".marker-item").forEach((item) => {
+          item.classList.remove("selected-marker");
+        });
+        const selectedElement = document.querySelector(
+          `.marker-item[data-id="${markerId}"]`
+        );
+        if (selectedElement) selectedElement.classList.add("selected-marker");
+        displayAddress(selectedMarker.latlng);
+        nextToPropertiesBtn.disabled = false;
+
+        // Step indicator'ı güncelle
+        document.getElementById("step1").className = "step step-completed";
+      }
+
+      map.on("click", async function (e) {
+        if (addMarkerMode) {
+          const addressInfo = await displayAddress(e.latlng);
+          const marker = L.marker(e.latlng).addTo(map);
+          const popupContent = `
+                    <div><strong>İşaretçi ${markerCounter}</strong></div>
+                    <div>${addressInfo.details.il || ""} ${
+            addressInfo.details.ilce || ""
+          }</div>
+                    <div>${addressInfo.details.mahalle || ""}</div>
+                    <small>Koordinat: ${e.latlng.lat.toFixed(
+                      6
+                    )}, ${e.latlng.lng.toFixed(6)}</small>
+                `;
+          marker.bindPopup(popupContent).openPopup();
+
+          const newMarker = {
+            id: markerCounter,
+            marker: marker,
+            latlng: e.latlng,
+            address: addressInfo,
+          };
+          markers.push(newMarker);
+          selectMarker(markerCounter);
+          updateMarkerList();
+          markerCounter++;
+        }
+      });
+
+      function updateMarkerList() {
+        if (markers.length === 0) {
+          markerList.innerHTML = "<p>Henüz işaretçi eklenmedi</p>";
+          return;
+        }
+        markerList.innerHTML = "";
+        markers.forEach((item) => {
+          const markerElement = document.createElement("div");
+          markerElement.className = "marker-item";
+          markerElement.setAttribute("data-id", item.id);
+          const addressText =
+            item.address.details.il ||
+            item.address.details.ilce ||
+            item.address.details.mahalle
+              ? `${item.address.details.il || ""} - ${
+                  item.address.details.ilce || ""
+                } - ${item.address.details.mahalle || ""}`
+              : item.address.fullAddress;
+          markerElement.innerHTML = `
+                    <div class="marker-info">
+                        <strong>İşaretçi ${item.id}</strong>
+                        <div class="marker-address">${addressText}</div>
+                    </div>
+                    <div class="marker-actions">
+                        <button class="remove-marker" data-id="${item.id}" title="Sil">×</button>
+                    </div>
+                `;
+          markerElement.addEventListener("click", function (e) {
+            if (!e.target.classList.contains("remove-marker"))
+              selectMarker(item.id);
+          });
+          markerList.appendChild(markerElement);
+        });
+        document.querySelectorAll(".remove-marker").forEach((button) => {
+          button.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const id = parseInt(this.getAttribute("data-id"));
+            removeMarker(id);
+          });
+        });
+      }
+
+      function removeMarker(id) {
+        const index = markers.findIndex((item) => item.id === id);
+        if (index !== -1) {
+          map.removeLayer(markers[index].marker);
+          markers.splice(index, 1);
+          if (selectedMarker && selectedMarker.id === id) {
+            selectedMarker = null;
+            nextToPropertiesBtn.disabled = true;
+            addressDisplay.innerHTML =
+              '<div class="loading">Konum bilgisi yükleniyor...</div>';
+          }
+          updateMarkerList();
+        }
+      }
+
+      map.on("click", function (e) {
+        if (removeMarkerMode) {
+          markers.forEach((item) => {
+            const distance = map.distance(e.latlng, item.latlng);
+            if (distance < 20) removeMarker(item.id);
+          });
+        }
+      });
+
+      let addressUpdateTimeout;
+      map.on("mousemove", function (e) {
+        if (!addMarkerMode && !selectedMarker) {
+          clearTimeout(addressUpdateTimeout);
+          addressUpdateTimeout = setTimeout(async () => {
+            await displayAddress(e.latlng);
+          }, 500);
+        }
+      });
+
+      setTimeout(async () => {
+        if (!selectedMarker) await displayAddress(map.getCenter());
+      }, 1000);
+    </script>
+  </body>
+</html>
